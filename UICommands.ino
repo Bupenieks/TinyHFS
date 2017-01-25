@@ -56,7 +56,7 @@ void stepOut() {
 void displayFolderContents() {
 
     /*
-     * Obtain and print the folders that belong to the current folder.
+     *  Obtain and print the folders that belong to the current folder.
      */
     updateCurrentDirectory(currentFolderStartAddress);
 
