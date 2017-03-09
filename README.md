@@ -50,9 +50,9 @@ Hierarchical file system implemented for the Orbit Booster Pack in conjunction w
 * The first byte of EEPROM is used to store the number of files in the system for utility - this byte is accessed as a state variable, and is referred to as the 'file count byte'
 * The system will be represented in memory with the following addresses:
 
- File Count Byte| ---- Folders ---- | --------------- Files --------------- | --------- File Headers ---------
- :-------------:| ----------------- | ------------------------------------- | -------------------------------- 
-        0       | 1 --------- 1,000 | 1,001 ------------------------ 28,768 | 28,769 ------------------ 32,766 
+ File Count Byte| --- Folders ---- | --------------- Files --------------- | --------- File Headers ---------
+ :-------------:| ---------------- | ------------------------------------- | -------------------------------- 
+        0       | 1 -------- 1,000 | 1,001 ---------------------- 28,768 | 28,769 ---------------- 32,766 
 
 ## Commands
 
