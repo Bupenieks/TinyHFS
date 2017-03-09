@@ -1,5 +1,5 @@
 # TinyHFS
-Hierarchical file system implemented for the Orbit Booster Pack in conjunction with the TM4C123GXL microcontroller. The system has a UNIX-like command line UI accessed through the Serial (UART) interface. 
+Hierarchical file system implemented on the Orbit Booster Pack, in conjunction with the TM4C123GXL microcontroller. The system has a UNIX-like command line UI accessed through the Serial (UART) interface. 
 
 ## Hardware Components
 
