@@ -18,14 +18,10 @@ void setup() {
 void loop() {
 
     int strRcvd = 0;
-
     while (Serial.available() > 0 && !strRcvd) {
-
         char received = Serial.read();
         data += received;
-
         if (received == '\n') {
-
             strRcvd = 1;
 
             // Work out length of data
@@ -39,22 +35,15 @@ void loop() {
             str_bytes[str_len - 1] = '\0';
 
             // Echo the user's input
-
             if (data != "\n") {
-
                 Serial.print("\n>");
                 Serial.print(data);
-
             }
-
+            
             parseCommand(str_bytes);
-
             data = "";
             Serial.flush();
-
         }
-
     }
-
 }
 
