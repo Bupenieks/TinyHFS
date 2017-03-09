@@ -23,17 +23,13 @@ void loop() {
         data += received;
         if (received == '\n') {
             strRcvd = 1;
-
             // Work out length of data
             int str_len = data.length();
             char str_bytes[str_len];
-
             // Split data into an array of char arrays, each one byte long
             for (int j = 0; j < str_len - 1; j++)
                 str_bytes[j] = data[j];
-
             str_bytes[str_len - 1] = '\0';
-
             // Echo the user's input
             if (data != "\n") {
                 Serial.print("\n>");

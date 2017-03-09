@@ -65,12 +65,10 @@ void writeFile(char file_text[], short file_size, short parentStartAddress, char
 
     if (fileStartAddress + file_size - 1 > FILE_PARTITION_UPPER_BOUND
         || !createFileHeader(fileStartAddress, parentStartAddress, file_size, fileName)) {
-
         Serial.print(
             "\nERROR: File space full; cannot save file. Try deleting some files, or organizing memory with the '");
         Serial.print(organize_mem);
         Serial.println("' command.");
-
         return;
     }
 
@@ -97,9 +95,7 @@ void readFile(short fileStartAddress, short fileEndAddress) {
 
     short fileSize = fileEndAddress - fileStartAddress + 1;
     unsigned char str_bytes[fileSize];
-
     Serial.println("\nFILE READ INITIATED");
-
     double timeStart = millis() / 1000.0;
 
     // Read the data byte-by-byte and store in str_bytes
@@ -109,11 +105,9 @@ void readFile(short fileStartAddress, short fileEndAddress) {
     double timeEnd = millis() / 1000.0;
 
     Serial.println("\n*** File Contents ***");
-
     // Print out the read data
     for (int i = 0; i < fileSize; i++)
         Serial.print((char) str_bytes[i]);
-
     Serial.println("\n*********************");
 
     Serial.print("\nFILE LENGTH: ");
@@ -129,19 +123,14 @@ void createFolder(short parentStartAddress) {
 
     byte parentStartAddressLow = getLowByte(parentStartAddress);
     byte parentStartAddressHigh = getHighByte(parentStartAddress);
-
     char *folderName = getName(FOLDER_NAME_SIZE);
-
     if (!folderName) return;
-    
     if (findStartAddressFromName(folderName, "folder")) {
         Serial.println("\nERROR: This folder already exists.");
         return;
     }
-
     short folderStartAddress = 0;
     int spaceCount = 0;
-
     for (int j = FOLDER_PARTITION_LOWER_BOUND; j <= FOLDER_PARTITION_UPPER_BOUND; j++) {
         spaceCount = (readByte(EEPROM_ADDRESS, j) == 0 ? spaceCount + 1 : 0);
         if (spaceCount == folderSize) {
@@ -149,7 +138,6 @@ void createFolder(short parentStartAddress) {
             break;
         }
     }
-
     if (!folderStartAddress) {
         Serial.println("\nERROR: Folder space full; cannot create folder.");
         Serial.println("Please delete at least one folder if you wish to create a new one.");
@@ -178,7 +166,6 @@ void rename(short startAddress, char *nameNew, short nameSize) {
 
     for (int i = startAddress; i < startAddress + nameSize; i++)
         writeByte(EEPROM_ADDRESS, i, nameNew[i - startAddress]);
-
     Serial.println("...done");
 }
 
@@ -247,15 +234,12 @@ int createFileHeader(short fileStartAddress, short parentStartAddress, short fil
             fileHeaderStartAddress = j - fileHeaderSize + 1;
             break;
         }
-
     }
-
     if (!fileHeaderStartAddress) {
         Serial.print(
             "\nERROR: File space full; cannot save file. Try deleting some files, or organizing memory with the '");
         Serial.print(organize_mem);
         Serial.println("' command.");
-
         return 0;
     }
 
@@ -275,25 +259,19 @@ int createFileHeader(short fileStartAddress, short parentStartAddress, short fil
     writeByte(EEPROM_ADDRESS, fileHeaderStartAddress + FILE_NAME_SIZE + 5, parentStartAddressLow);
 
     return 1;
-
 }
 
 void copyFile(short srcStartAddress, short srcEndAddress, short destStartAddress, char *fileName) {
 
     double timeStart = millis() / 1000.0;
-
     int file_size = srcEndAddress - srcStartAddress + 1;
     short fileStartAddress = (fileCount == 0 ? FILE_PARTITION_LOWER_BOUND : fileEndAddresses[fileCount - 1] + 1);
     Serial.println("\nFILE COPY INITIATED");
-
     if (fileStartAddress + file_size - 1 > FILE_PARTITION_UPPER_BOUND
         || !createFileHeader(fileStartAddress, destStartAddress, file_size, fileName)) {
-
         Serial.println("\nERROR: File space full; cannot save file");
-
         return;
     }
-
     for (int i = fileStartAddress; i <= fileStartAddress + file_size - 1; i++)
         writeByte(EEPROM_ADDRESS, i, readByte(EEPROM_ADDRESS, srcStartAddress + i - fileStartAddress));
 
@@ -308,7 +286,6 @@ void copyFile(short srcStartAddress, short srcEndAddress, short destStartAddress
 
     fileStartAddresses[fileCount] = fileStartAddress;
     fileEndAddresses[fileCount] = fileStartAddress + file_size - 1;
-
     writeByte(EEPROM_ADDRESS, 0, (byte)(++fileCount));
 
 }
@@ -333,23 +310,18 @@ void deleteFile(short fileHeaderStartAddress) {
      * files over by one.
      */
     int mustShift = 0;
-
     for (int i = 0; i < fileCount; i++) {
         if (mustShift)
             fileStartAddresses[i - 1] = fileStartAddresses[i];
-
         if (fileStartAddresses[i] == fileStartAddress)
             mustShift = 1;
     }
 
     fileStartAddresses[--fileCount] = 0;
-
     writeByte(EEPROM_ADDRESS, 0, (byte)(fileCount));
-
     // Overwrite the file header with null characters
     for (int i = fileHeaderStartAddress; i < fileHeaderStartAddress + fileHeaderSize; i++)
         writeByte(EEPROM_ADDRESS, i, 0);
-
 }
 
 void deleteFolder(short folderStartAddress) {
@@ -361,7 +333,6 @@ void deleteFolder(short folderStartAddress) {
         Serial.println("\nERROR: Cannot delete root folder");
         return;
     }
-
     // Overwrite the folder with null characters
     for (int i = folderStartAddress; i <= folderEndAddress; i++)
         writeByte(EEPROM_ADDRESS, i, 0);
@@ -371,21 +342,16 @@ void deleteFolder(short folderStartAddress) {
      * then delete the file headers and files whose parent folder start address corresponds to the folder
      * being deleted.
      */
-
     for (int i = FILE_HEADER_PARTITION_LOWER_BOUND + FILE_NAME_SIZE + 4; i <= FILE_HEADER_PARTITION_UPPER_BOUND; i +=
         fileHeaderSize) {
-
         char parentStartAddressCurrHigh = readByte(EEPROM_ADDRESS, i);
         char parentStartAddressCurrLow = readByte(EEPROM_ADDRESS, i + 1);
         short parentStartAddressCurr = assembleShort(parentStartAddressCurrHigh, parentStartAddressCurrLow);
-
         if (folderStartAddress == parentStartAddressCurr) {
             short fileHeaderStartAddressCurr = i - FILE_NAME_SIZE - 4;
             deleteFile(fileHeaderStartAddressCurr);
         }
-
     }
-
 }
 
 // Clears the EEPROM by overwriting all data with the null character (takes approximately 144 seconds)
@@ -393,10 +359,8 @@ void format() {
 
     double timeStart = millis() / 1000.0;
     Serial.println("\nEEPROM FORMAT INITIATED");
-
     for (int i = MIN_ADDRESS; i <= MAX_ADDRESS; i++)
         writeByte(EEPROM_ADDRESS, i, 0);
-
     double timeEnd = millis() / 1000.0;
 
     Serial.print("\nEEPROM FORMATTED\n\n");
@@ -405,7 +369,6 @@ void format() {
     Serial.print(" s\n");
 
     InitHFS();
-
 }
 
  /**
@@ -425,19 +388,13 @@ void organizeMemory() {
     qsort(fileEndAddresses, fileCount, sizeof(short), compVals);
 
     Serial.println("\nOrganizing memory...");
-
-    shiftHowMany = fileStartAddresses[0] - FILE_PARTITION_LOWER_BOUND;
-
     if (shiftHowMany <= 0) needsShifting = 0;
-
     fileSize = fileEndAddresses[0] - fileStartAddresses[0] + 1;
-
     if (needsShifting) {
         for (int j = 0; j < fileSize; j++) {
             writeByte(EEPROM_ADDRESS, fileStartAddresses[0] - shiftHowMany + j,
                 readByte(EEPROM_ADDRESS, fileStartAddresses[0] + j));
         }
-
         for (int i = FILE_HEADER_PARTITION_LOWER_BOUND + FILE_NAME_SIZE; i <= FILE_HEADER_PARTITION_UPPER_BOUND;
                 i += fileHeaderSize) {
             short readAddress = assembleShort(readByte(EEPROM_ADDRESS, i), readByte(EEPROM_ADDRESS, i + 1));
@@ -449,14 +406,12 @@ void organizeMemory() {
                 writeByte(EEPROM_ADDRESS, i + 3, getLowByte(fileEndAddresses[0] - shiftHowMany));
                 break;
             }
-
         }
         fileStartAddresses[0] -= shiftHowMany;
         fileEndAddresses[0] -= shiftHowMany;
     }   
 
     needsShifting = 1;
-
     for (int i = 1; i < fileCount; i++) {
         shiftHowMany = fileStartAddresses[i] - fileEndAddresses[i - 1] - 1;
         if (shiftHowMany <= 0) needsShifting = 0;
@@ -466,7 +421,6 @@ void organizeMemory() {
                 writeByte(EEPROM_ADDRESS, fileStartAddresses[i] - shiftHowMany + j,
                     readByte(EEPROM_ADDRESS, fileStartAddresses[i] + j));
             }
-
             for (int k = FILE_HEADER_PARTITION_LOWER_BOUND + FILE_NAME_SIZE; k <= FILE_HEADER_PARTITION_UPPER_BOUND;
                     k += fileHeaderSize) {
                 short readAddress = assembleShort(readByte(EEPROM_ADDRESS, k), readByte(EEPROM_ADDRESS, k + 1));
